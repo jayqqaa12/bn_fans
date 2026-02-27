@@ -25,10 +25,6 @@
   "build": {
     "appId": "com.bn-fans.app",
     "productName": "BinanceFollower",
-    "electronDist": "node_modules/electron/dist",
-    "electronDownload": {
-      "mirror": "https://npmmirror.com/mirrors/electron/"
-    },
     "directories": {
       "output": "dist"
     },
@@ -38,7 +34,8 @@
       "package.json"
     ],
     "mac": {
-      "target": ["dmg"]
+      "target": ["dmg"],
+      "arch": ["x64"]
     },
     "win": {
       "target": ["nsis"]

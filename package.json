@@ -47,5 +47,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "puppeteer": {
+    "skipDownload": true
   }
 }

@@ -25,6 +25,7 @@
   "build": {
     "appId": "com.bn-fans.app",
     "productName": "BinanceFollower",
+    "publish": null,
     "directories": {
       "output": "dist"
     },

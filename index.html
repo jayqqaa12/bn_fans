@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>币安自动关注机器人</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 22px;
+      color: #f0b90b;
+    }
+    .login-box {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+    }
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #qrcode {
+      margin-bottom: 20px;
+    }
+    #qrcode img {
+      border-radius: 8px;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .status.pending {
+      background: rgba(240, 185, 11, 0.1);
+      border: 1px solid rgba(240, 185, 11, 0.3);
+      color: #f0b90b;
+    }
+    .status.success {
+      background: rgba(0, 200, 83, 0.1);
+      border: 1px solid rgba(0, 200, 83, 0.3);
+      color: #00c853;
+    }
+    .status.error {
+      background: rgba(255, 82, 82, 0.1);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+      color: #ff5252;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .task-box {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+    .task-box h2 {
+      margin-bottom: 20px;
+      color: #f0b90b;
+      font-size: 18px;
+    }
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #aaa;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 14px;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #f0b90b;
+    }
+    .input-group input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #f0b90b;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #d4a60a;
+    }
+    .btn-primary:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+    .btn-danger {
+      background: #ff5252;
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #ff1744;
+    }
+    .log-container {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 16px;
+    }
+    .log-entry {
+      margin-bottom: 4px;
+      color: #aaa;
+    }
+    .log-entry.success {
+      color: #00c853;
+    }
+    .log-entry.error {
+      color: #ff5252;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>币安自动关注机器人</h1>
+    
+    <div id="loginPage" class="login-box">
+      <div class="qr-container">
+        <div id="qrcode"></div>
+        <div id="status" class="status pending">请点击下方按钮登录</div>
+      </div>
+      <button class="btn btn-primary" id="loginBtn" style="margin-top:20px;">登录</button>
+      <div style="margin-top:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;color:#888;line-height:1.6;">
+        <div style="color:#f0b90b;font-weight:600;margin-bottom:8px;">使用说明</div>
+        1. 使用本软件需先安装 Chrome 浏览器<br>
+        2. 点击登录自动打开币安登录页面<br>
+        3. 登录成功后返回，输入用户ID开始自动关注
+      </div>
+    </div>
+
+    <div id="taskPage" class="task-box hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 style="margin:0;">开始任务</h2>
+        <button class="btn" id="reloginBtn" style="width:auto;padding:8px 16px;font-size:13px;background:rgba(255,255,255,0.1);color:#fff;">切换账号</button>
+      </div>
+      <div class="input-group">
+        <label>输入要获取粉丝的用户ID</label>
+        <input type="text" id="targetUserId" placeholder="例如: dahuzi886">
+      </div>
+      <button class="btn btn-primary" id="startTaskBtn">开始关注</button>
+      <button class="btn btn-danger" id="stopTaskBtn" style="display:none;">停止任务</button>
+      
+      <div class="log-container" id="logs"></div>
+    </div>
+  </div>
+
+  <script src="src/renderer.js"></script>
+</body>
+</html>
